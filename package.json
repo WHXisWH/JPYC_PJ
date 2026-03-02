@@ -1,0 +1,20 @@
+{
+  "name": "nodestay",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "dev": "npm run dev -w @nodestay/api & npm run dev -w @nodestay/web",
+    "build": "npm run build -ws",
+    "test": "npm run test -ws",
+    "test:coverage": "npm run test:coverage -ws",
+    "lint": "npm run lint -ws",
+    "typecheck": "npm run typecheck -ws"
+  }
+}
+

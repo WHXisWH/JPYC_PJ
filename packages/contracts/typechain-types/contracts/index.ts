@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export type { AccessPassNFT } from "./AccessPassNFT";
+export type { ComputeMarket } from "./ComputeMarket";
 export type { DepositVault } from "./DepositVault";
 export type { MockERC20 } from "./MockERC20";
 export type { MockERC20Config } from "./MockERC20Config";

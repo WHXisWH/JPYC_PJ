@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export { AccessPassNFT__factory } from "./AccessPassNFT__factory";
+export { ComputeMarket__factory } from "./ComputeMarket__factory";
 export { DepositVault__factory } from "./DepositVault__factory";
 export { MockERC20__factory } from "./MockERC20__factory";
 export { MockERC20Config__factory } from "./MockERC20Config__factory";

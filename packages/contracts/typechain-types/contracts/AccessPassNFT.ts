@@ -23,25 +23,60 @@ import type {
   TypedContractMethod,
 } from "../common";
 
+export declare namespace AccessPassNFT {
+  export type PassDataStruct = {
+    planId: BigNumberish;
+    venueId: BigNumberish;
+    remainingMinutes: BigNumberish;
+    expiresAt: BigNumberish;
+    isActive: boolean;
+    transferable: boolean;
+  };
+
+  export type PassDataStructOutput = [
+    planId: bigint,
+    venueId: bigint,
+    remainingMinutes: bigint,
+    expiresAt: bigint,
+    isActive: boolean,
+    transferable: boolean
+  ] & {
+    planId: bigint;
+    venueId: bigint;
+    remainingMinutes: bigint;
+    expiresAt: bigint;
+    isActive: boolean;
+    transferable: boolean;
+  };
+}
+
 export interface AccessPassNFTInterface extends Interface {
   getFunction(
     nameOrSignature:
+      | "TRANSFER_COOLDOWN"
       | "approve"
       | "balanceOf"
+      | "consumePass"
       | "getApproved"
+      | "getPass"
       | "isApprovedForAll"
+      | "isPassValid"
+      | "lastTransferTime"
       | "mint"
       | "name"
       | "nextTokenId"
       | "operator"
       | "owner"
       | "ownerOf"
+      | "passes"
+      | "reactivatePass"
       | "renounceOwnership"
       | "safeTransferFrom(address,address,uint256)"
       | "safeTransferFrom(address,address,uint256,bytes)"
       | "setApprovalForAll"
       | "setOperator"
       | "supportsInterface"
+      | "suspendPass"
       | "symbol"
       | "tokenURI"
       | "transferFrom"
@@ -54,9 +89,17 @@ export interface AccessPassNFTInterface extends Interface {
       | "ApprovalForAll"
       | "OperatorUpdated"
       | "OwnershipTransferred"
+      | "PassConsumed"
+      | "PassMinted"
+      | "PassReactivated"
+      | "PassSuspended"
       | "Transfer"
   ): EventFragment;
 
+  encodeFunctionData(
+    functionFragment: "TRANSFER_COOLDOWN",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "approve",
     values: [AddressLike, BigNumberish]
@@ -66,14 +109,40 @@ export interface AccessPassNFTInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "consumePass",
+    values: [BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "getApproved",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getPass",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "isApprovedForAll",
     values: [AddressLike, AddressLike]
   ): string;
-  encodeFunctionData(functionFragment: "mint", values: [AddressLike]): string;
+  encodeFunctionData(
+    functionFragment: "isPassValid",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "lastTransferTime",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "mint",
+    values: [
+      AddressLike,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish,
+      boolean
+    ]
+  ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "nextTokenId",
@@ -83,6 +152,14 @@ export interface AccessPassNFTInterface extends Interface {
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "ownerOf",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "passes",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "reactivatePass",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -109,6 +186,10 @@ export interface AccessPassNFTInterface extends Interface {
     functionFragment: "supportsInterface",
     values: [BytesLike]
   ): string;
+  encodeFunctionData(
+    functionFragment: "suspendPass",
+    values: [BigNumberish]
+  ): string;
   encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "tokenURI",
@@ -123,14 +204,31 @@ export interface AccessPassNFTInterface extends Interface {
     values: [AddressLike]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "TRANSFER_COOLDOWN",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "consumePass",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "getApproved",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "getPass", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "isApprovedForAll",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "isPassValid",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "lastTransferTime",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
@@ -142,6 +240,11 @@ export interface AccessPassNFTInterface extends Interface {
   decodeFunctionResult(functionFragment: "operator", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "passes", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "reactivatePass",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
     data: BytesLike
@@ -164,6 +267,10 @@ export interface AccessPassNFTInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "supportsInterface",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "suspendPass",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
@@ -243,6 +350,86 @@ export namespace OwnershipTransferredEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
+export namespace PassConsumedEvent {
+  export type InputTuple = [
+    tokenId: BigNumberish,
+    usedMinutes: BigNumberish,
+    remainingMinutes: BigNumberish
+  ];
+  export type OutputTuple = [
+    tokenId: bigint,
+    usedMinutes: bigint,
+    remainingMinutes: bigint
+  ];
+  export interface OutputObject {
+    tokenId: bigint;
+    usedMinutes: bigint;
+    remainingMinutes: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace PassMintedEvent {
+  export type InputTuple = [
+    tokenId: BigNumberish,
+    to: AddressLike,
+    planId: BigNumberish,
+    venueId: BigNumberish,
+    durationMinutes: BigNumberish,
+    expiresAt: BigNumberish,
+    transferable: boolean
+  ];
+  export type OutputTuple = [
+    tokenId: bigint,
+    to: string,
+    planId: bigint,
+    venueId: bigint,
+    durationMinutes: bigint,
+    expiresAt: bigint,
+    transferable: boolean
+  ];
+  export interface OutputObject {
+    tokenId: bigint;
+    to: string;
+    planId: bigint;
+    venueId: bigint;
+    durationMinutes: bigint;
+    expiresAt: bigint;
+    transferable: boolean;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace PassReactivatedEvent {
+  export type InputTuple = [tokenId: BigNumberish];
+  export type OutputTuple = [tokenId: bigint];
+  export interface OutputObject {
+    tokenId: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace PassSuspendedEvent {
+  export type InputTuple = [tokenId: BigNumberish];
+  export type OutputTuple = [tokenId: bigint];
+  export interface OutputObject {
+    tokenId: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
 export namespace TransferEvent {
   export type InputTuple = [
     from: AddressLike,
@@ -304,6 +491,8 @@ export interface AccessPassNFT extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
+  TRANSFER_COOLDOWN: TypedContractMethod<[], [bigint], "view">;
+
   approve: TypedContractMethod<
     [to: AddressLike, tokenId: BigNumberish],
     [void],
@@ -312,7 +501,19 @@ export interface AccessPassNFT extends BaseContract {
 
   balanceOf: TypedContractMethod<[owner: AddressLike], [bigint], "view">;
 
+  consumePass: TypedContractMethod<
+    [tokenId: BigNumberish, usedMinutes: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
   getApproved: TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
+
+  getPass: TypedContractMethod<
+    [tokenId: BigNumberish],
+    [AccessPassNFT.PassDataStructOutput],
+    "view"
+  >;
 
   isApprovedForAll: TypedContractMethod<
     [owner: AddressLike, operator: AddressLike],
@@ -320,7 +521,22 @@ export interface AccessPassNFT extends BaseContract {
     "view"
   >;
 
-  mint: TypedContractMethod<[to: AddressLike], [bigint], "nonpayable">;
+  isPassValid: TypedContractMethod<[tokenId: BigNumberish], [boolean], "view">;
+
+  lastTransferTime: TypedContractMethod<[arg0: BigNumberish], [bigint], "view">;
+
+  mint: TypedContractMethod<
+    [
+      to: AddressLike,
+      planId: BigNumberish,
+      venueId: BigNumberish,
+      durationMinutes: BigNumberish,
+      expiresAt: BigNumberish,
+      transferable_: boolean
+    ],
+    [bigint],
+    "nonpayable"
+  >;
 
   name: TypedContractMethod<[], [string], "view">;
 
@@ -331,6 +547,27 @@ export interface AccessPassNFT extends BaseContract {
   owner: TypedContractMethod<[], [string], "view">;
 
   ownerOf: TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
+
+  passes: TypedContractMethod<
+    [arg0: BigNumberish],
+    [
+      [bigint, bigint, bigint, bigint, boolean, boolean] & {
+        planId: bigint;
+        venueId: bigint;
+        remainingMinutes: bigint;
+        expiresAt: bigint;
+        isActive: boolean;
+        transferable: boolean;
+      }
+    ],
+    "view"
+  >;
+
+  reactivatePass: TypedContractMethod<
+    [tokenId: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
 
   renounceOwnership: TypedContractMethod<[], [void], "nonpayable">;
 
@@ -369,6 +606,12 @@ export interface AccessPassNFT extends BaseContract {
     "view"
   >;
 
+  suspendPass: TypedContractMethod<
+    [tokenId: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
   symbol: TypedContractMethod<[], [string], "view">;
 
   tokenURI: TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
@@ -390,6 +633,9 @@ export interface AccessPassNFT extends BaseContract {
   ): T;
 
   getFunction(
+    nameOrSignature: "TRANSFER_COOLDOWN"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
     nameOrSignature: "approve"
   ): TypedContractMethod<
     [to: AddressLike, tokenId: BigNumberish],
@@ -400,8 +646,22 @@ export interface AccessPassNFT extends BaseContract {
     nameOrSignature: "balanceOf"
   ): TypedContractMethod<[owner: AddressLike], [bigint], "view">;
   getFunction(
+    nameOrSignature: "consumePass"
+  ): TypedContractMethod<
+    [tokenId: BigNumberish, usedMinutes: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
     nameOrSignature: "getApproved"
   ): TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
+  getFunction(
+    nameOrSignature: "getPass"
+  ): TypedContractMethod<
+    [tokenId: BigNumberish],
+    [AccessPassNFT.PassDataStructOutput],
+    "view"
+  >;
   getFunction(
     nameOrSignature: "isApprovedForAll"
   ): TypedContractMethod<
@@ -410,8 +670,25 @@ export interface AccessPassNFT extends BaseContract {
     "view"
   >;
   getFunction(
+    nameOrSignature: "isPassValid"
+  ): TypedContractMethod<[tokenId: BigNumberish], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "lastTransferTime"
+  ): TypedContractMethod<[arg0: BigNumberish], [bigint], "view">;
+  getFunction(
     nameOrSignature: "mint"
-  ): TypedContractMethod<[to: AddressLike], [bigint], "nonpayable">;
+  ): TypedContractMethod<
+    [
+      to: AddressLike,
+      planId: BigNumberish,
+      venueId: BigNumberish,
+      durationMinutes: BigNumberish,
+      expiresAt: BigNumberish,
+      transferable_: boolean
+    ],
+    [bigint],
+    "nonpayable"
+  >;
   getFunction(
     nameOrSignature: "name"
   ): TypedContractMethod<[], [string], "view">;
@@ -427,6 +704,25 @@ export interface AccessPassNFT extends BaseContract {
   getFunction(
     nameOrSignature: "ownerOf"
   ): TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
+  getFunction(
+    nameOrSignature: "passes"
+  ): TypedContractMethod<
+    [arg0: BigNumberish],
+    [
+      [bigint, bigint, bigint, bigint, boolean, boolean] & {
+        planId: bigint;
+        venueId: bigint;
+        remainingMinutes: bigint;
+        expiresAt: bigint;
+        isActive: boolean;
+        transferable: boolean;
+      }
+    ],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "reactivatePass"
+  ): TypedContractMethod<[tokenId: BigNumberish], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "renounceOwnership"
   ): TypedContractMethod<[], [void], "nonpayable">;
@@ -462,6 +758,9 @@ export interface AccessPassNFT extends BaseContract {
   getFunction(
     nameOrSignature: "supportsInterface"
   ): TypedContractMethod<[interfaceId: BytesLike], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "suspendPass"
+  ): TypedContractMethod<[tokenId: BigNumberish], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "symbol"
   ): TypedContractMethod<[], [string], "view">;
@@ -506,6 +805,34 @@ export interface AccessPassNFT extends BaseContract {
     OwnershipTransferredEvent.InputTuple,
     OwnershipTransferredEvent.OutputTuple,
     OwnershipTransferredEvent.OutputObject
+  >;
+  getEvent(
+    key: "PassConsumed"
+  ): TypedContractEvent<
+    PassConsumedEvent.InputTuple,
+    PassConsumedEvent.OutputTuple,
+    PassConsumedEvent.OutputObject
+  >;
+  getEvent(
+    key: "PassMinted"
+  ): TypedContractEvent<
+    PassMintedEvent.InputTuple,
+    PassMintedEvent.OutputTuple,
+    PassMintedEvent.OutputObject
+  >;
+  getEvent(
+    key: "PassReactivated"
+  ): TypedContractEvent<
+    PassReactivatedEvent.InputTuple,
+    PassReactivatedEvent.OutputTuple,
+    PassReactivatedEvent.OutputObject
+  >;
+  getEvent(
+    key: "PassSuspended"
+  ): TypedContractEvent<
+    PassSuspendedEvent.InputTuple,
+    PassSuspendedEvent.OutputTuple,
+    PassSuspendedEvent.OutputObject
   >;
   getEvent(
     key: "Transfer"
@@ -558,6 +885,50 @@ export interface AccessPassNFT extends BaseContract {
       OwnershipTransferredEvent.InputTuple,
       OwnershipTransferredEvent.OutputTuple,
       OwnershipTransferredEvent.OutputObject
+    >;
+
+    "PassConsumed(uint256,uint256,uint256)": TypedContractEvent<
+      PassConsumedEvent.InputTuple,
+      PassConsumedEvent.OutputTuple,
+      PassConsumedEvent.OutputObject
+    >;
+    PassConsumed: TypedContractEvent<
+      PassConsumedEvent.InputTuple,
+      PassConsumedEvent.OutputTuple,
+      PassConsumedEvent.OutputObject
+    >;
+
+    "PassMinted(uint256,address,uint256,uint256,uint256,uint256,bool)": TypedContractEvent<
+      PassMintedEvent.InputTuple,
+      PassMintedEvent.OutputTuple,
+      PassMintedEvent.OutputObject
+    >;
+    PassMinted: TypedContractEvent<
+      PassMintedEvent.InputTuple,
+      PassMintedEvent.OutputTuple,
+      PassMintedEvent.OutputObject
+    >;
+
+    "PassReactivated(uint256)": TypedContractEvent<
+      PassReactivatedEvent.InputTuple,
+      PassReactivatedEvent.OutputTuple,
+      PassReactivatedEvent.OutputObject
+    >;
+    PassReactivated: TypedContractEvent<
+      PassReactivatedEvent.InputTuple,
+      PassReactivatedEvent.OutputTuple,
+      PassReactivatedEvent.OutputObject
+    >;
+
+    "PassSuspended(uint256)": TypedContractEvent<
+      PassSuspendedEvent.InputTuple,
+      PassSuspendedEvent.OutputTuple,
+      PassSuspendedEvent.OutputObject
+    >;
+    PassSuspended: TypedContractEvent<
+      PassSuspendedEvent.InputTuple,
+      PassSuspendedEvent.OutputTuple,
+      PassSuspendedEvent.OutputObject
     >;
 
     "Transfer(address,address,uint256)": TypedContractEvent<

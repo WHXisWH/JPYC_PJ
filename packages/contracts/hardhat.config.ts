@@ -1,5 +1,10 @@
 import { HardhatUserConfig } from 'hardhat/config';
 import '@nomicfoundation/hardhat-toolbox';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
+
+const DEPLOYER_PRIVATE_KEY = process.env.DEPLOYER_PRIVATE_KEY ?? '';
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -7,6 +12,26 @@ const config: HardhatUserConfig = {
     settings: {
       optimizer: { enabled: true, runs: 200 },
       evmVersion: 'cancun',
+    },
+  },
+  networks: {
+    // Polygon Amoy テストネット
+    amoy: {
+      url: process.env.AMOY_RPC_URL ?? 'https://rpc-amoy.polygon.technology',
+      chainId: 80002,
+      accounts: DEPLOYER_PRIVATE_KEY ? [DEPLOYER_PRIVATE_KEY] : [],
+    },
+    // Polygon PoS メインネット
+    polygon: {
+      url: process.env.POLYGON_RPC_URL ?? 'https://polygon-rpc.com',
+      chainId: 137,
+      accounts: DEPLOYER_PRIVATE_KEY ? [DEPLOYER_PRIVATE_KEY] : [],
+    },
+  },
+  etherscan: {
+    apiKey: {
+      polygon:     process.env.POLYGONSCAN_API_KEY ?? '',
+      polygonAmoy: process.env.POLYGONSCAN_API_KEY ?? '',
     },
   },
   paths: {

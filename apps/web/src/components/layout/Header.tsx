@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { href: '/venues', label: '店舗を探す' },
   { href: '/passes', label: 'マイパス' },
   { href: '/sessions', label: 'セッション' },
+  { href: '/compute', label: '算力マーケット' },
 ] as const;
 
 export function Header() {

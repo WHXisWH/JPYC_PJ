@@ -1,0 +1,52 @@
+---
+description: NestJS backend standards — module structure, services, idempotency, API design
+globs: apps/api/**
+alwaysApply: false
+---
+
+# NestJS Backend Standards
+
+## Architecture
+
+- NestJS 10, entry point `apps/api/src/main.ts`, default port 3001
+- API versioning: all routes prefixed with `/v1/`
+- Module structure: controllers and services under `src/modules/v1/`
+
+## Controllers (8)
+
+| Controller | Route Prefix | Responsibility |
+|------------|-------------|----------------|
+| `health` | `/v1/health` | Health check |
+| `venues` | `/v1/venues` | Venue CRUD, pricing plans, seats |
+| `passes` | `/v1/passes` | AccessPass purchase, transfer |
+| `identity` | `/v1/identity` | Identity verification |
+| `sessions` | `/v1/sessions` | Check-in / checkout |
+| `user` | `/v1/user` | User balance query |
+| `merchant` | `/v1/merchant` | Venue management (merchant side) |
+| `compute` | `/v1/compute` | Compute nodes, job management |
+
+## Core Services
+
+| Service | Responsibility |
+|---------|---------------|
+| `StoreService` | In-memory Map data store (MVP), CRUD for all entities |
+| `IdempotencyService` | Idempotency key management, prevents duplicate payments/operations |
+| `LedgerService` | Ledger records, generates `ltx_`-prefixed transaction IDs |
+| `FeatureFlagsService` | Feature toggles (e.g. `ENABLE_COMPUTE_MARKET`) |
+
+## Coding Conventions
+
+- Use `@nodestay/domain` Zod schemas for request validation
+- Critical write operations (purchase, checkout) must require an `Idempotency-Key` header
+- ID generation: `crypto.randomBytes(8).toString('hex')` + entity prefix
+- Response messages are in **Japanese**
+- Currently in-memory storage; keep Service interfaces stable for future PostgreSQL migration
+
+## Environment Variables
+
+- `PORT` — Server port
+- `DATABASE_URL` — PostgreSQL connection string (reserved)
+- `REDIS_URL` — Redis connection string (reserved)
+- `JWT_SECRET` — JWT signing secret
+- `ENABLE_COMPUTE_MARKET` — Compute market feature toggle
+- `OPERATOR_PRIVATE_KEY` — On-chain operator private key

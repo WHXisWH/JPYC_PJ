@@ -1,0 +1,56 @@
+---
+description: NodeStay project overview — architecture, tech stack, directory structure, business domain
+alwaysApply: true
+---
+
+# NodeStay Project Overview
+
+## Purpose
+
+A Web3 two-sided marketplace for Japanese internet cafes (インターネットカフェ), using JPYC (JPY stablecoin) on Polygon for payments and settlements.
+
+## Core Business
+
+1. **Seat Access Rights Market** — Users purchase AccessPassNFT with JPYC, scan to check in at a venue, and get auto-charged on checkout
+2. **Idle Compute Market** — Internet cafe PCs/GPUs are rented out as compute nodes; revenue is split 75% (venue) / 25% (platform)
+
+## Monorepo Structure (npm workspaces)
+
+```
+apps/
+  web/          → Next.js 14 (App Router) frontend, port 3000
+  api/          → NestJS 10 backend, port 3001
+packages/
+  contracts/    → Hardhat + Solidity 0.8.26 smart contracts
+  domain/       → Zod schema shared types (venue, session, compute, money, etc.)
+  api-client/   → NodeStayClient HTTP client wrapper
+```
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Frontend | Next.js 14, React, Tailwind CSS v4 |
+| Backend | NestJS 10, TypeScript 5.6+ |
+| Contracts | Solidity 0.8.26, Hardhat 2.22, OpenZeppelin 5 |
+| Chain | Polygon PoS (137) / Amoy testnet (80002) |
+| Typings | TypeChain (ethers-v6) |
+| Validation | Zod 3.24 |
+| Infrastructure | PostgreSQL 16, Redis 7 (docker-compose) |
+
+## Key Conventions
+
+- UI copy, API messages, and code comments are in **Japanese**
+- Monetary fields use the `Minor` suffix for smallest currency unit (1 JPYC = 1 minor)
+- ID prefixes identify entity types: `venue_`, `plan_`, `pass_`, `sess_`, `node_`, `job_`, `disp_`, `idv_`, `ltx_`
+- Idempotent operations require an `Idempotency-Key` request header
+- The API currently uses in-memory Map storage (MVP); PostgreSQL/Redis integration points are prepared
+
+## Common Commands
+
+```bash
+npm run dev          # Start API + Web concurrently
+npm run build        # Build all workspaces
+npm run test         # Run all tests
+npm run typecheck    # Global type checking
+```

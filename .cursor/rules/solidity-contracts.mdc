@@ -1,0 +1,47 @@
+---
+description: Solidity smart contract standards — Hardhat, OpenZeppelin, Polygon deployment
+globs: packages/contracts/**
+alwaysApply: false
+---
+
+# Smart Contract Standards
+
+## Environment
+
+- Solidity `0.8.26`, EVM version `cancun`, optimizer runs: 200
+- Hardhat 2.22 + `@nomicfoundation/hardhat-toolbox`
+- OpenZeppelin Contracts v5
+- Target chains: Polygon Amoy (chainId 80002) / Polygon PoS (chainId 137)
+
+## Contract Overview
+
+| Contract | Responsibility |
+|----------|---------------|
+| `AccessPassNFT.sol` | Access-right ERC-721: mint, consume, pause, 24h cooldown, non-transferable |
+| `DepositVault.sol` | JPYC escrow: hold, capture, release |
+| `ComputeMarket.sol` | Compute marketplace: node registration, job state machine, 75/25 revenue split |
+| `MockERC20.sol` | JPYC mock for testing |
+
+## Coding Conventions
+
+- Use OpenZeppelin's `Ownable`, `ReentrancyGuard`, `Pausable` standard modules
+- Event naming: past-tense verbs (`PassMinted`, `JobCompleted`)
+- Use custom errors instead of require strings
+- JPYC ERC-20 address is injected at deployment, never hardcoded
+
+## Testing
+
+- Framework: Mocha + Chai (Hardhat built-in)
+- Test files located at `packages/contracts/test/`
+- Run: `npm run test -w @nodestay/contracts`
+- Coverage: `npm run coverage -w @nodestay/contracts`
+
+## Deployment
+
+```bash
+cd packages/contracts
+npx hardhat compile
+npx hardhat run scripts/deploy.ts --network amoy
+```
+
+Environment variables (`.env`): `DEPLOYER_PRIVATE_KEY`, `AMOY_RPC_URL`, `POLYGON_RPC_URL`, `POLYGONSCAN_API_KEY`, `PLATFORM_FEE_RECIPIENT`, `JPYC_TOKEN_ADDRESS`

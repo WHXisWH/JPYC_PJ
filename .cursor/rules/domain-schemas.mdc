@@ -1,0 +1,36 @@
+---
+description: Domain shared package standards — Zod schemas, type definitions, cross-package sharing
+globs: packages/domain/**
+alwaysApply: false
+---
+
+# Domain Shared Package Standards
+
+## Purpose
+
+`@nodestay/domain` is a pure type/validation package, depended on by `apps/web`, `apps/api`, and `packages/api-client`. It contains no business logic — only Zod schemas and inferred types.
+
+## Module Overview
+
+| File | Domain |
+|------|--------|
+| `venue.ts` | Venue, jurisdiction, regulation profile |
+| `terminal.ts` | Terminal (seat device) |
+| `identity.ts` | Identity verification |
+| `accessPass.ts` | Access pass |
+| `reservation.ts` | Reservation |
+| `session.ts` | Check-in / checkout session |
+| `money.ts` | Monetary amounts, currency |
+| `ledger.ts` | Ledger transaction records |
+| `compute.ts` | Compute nodes, jobs (ComputeNode, ComputeJob) |
+| `settlement.ts` | Settlement |
+| `dispute.ts` | Dispute |
+| `idempotency.ts` | Idempotency key normalization |
+
+## Coding Conventions
+
+- Each file exports `XxxSchema` (Zod object) and `type Xxx = z.infer<typeof XxxSchema>`
+- Monetary fields use the `Minor` suffix (integer, smallest currency unit)
+- Status enums use `z.enum([...])` and export a standalone Status schema
+- All modules are re-exported from `index.ts`
+- When adding a new domain model, add `export * from './newModule'` to `index.ts`

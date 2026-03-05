@@ -1,0 +1,47 @@
+---
+description: Next.js 14 frontend standards — App Router, Tailwind, NodeStayClient
+globs: apps/web/**
+alwaysApply: false
+---
+
+# Next.js Frontend Standards
+
+## Architecture
+
+- Next.js 14 + App Router (`apps/web/src/app/`)
+- Styling: Tailwind CSS v4 + `@tailwindcss/postcss`
+- Backend calls via `NodeStayClient` from `@nodestay/api-client`
+- Shared types from `@nodestay/domain`
+
+## Route Structure
+
+| Route | Page |
+|-------|------|
+| `/` | Home |
+| `/venues` | Venue listing |
+| `/venues/[venueId]` | Venue details + pricing plans |
+| `/passes` | My passes |
+| `/sessions` | Session / timer |
+| `/compute` | Compute marketplace |
+| `/merchant/compute` | Venue node management |
+
+## Coding Conventions
+
+- UI copy is in **Japanese**
+- Default to Server Components; use `'use client'` only when interactivity is needed
+- Layout components live in `src/components/layout/` (Header, Footer)
+- API client is instantiated in `src/services/nodestay.ts`
+- Use `NEXT_PUBLIC_` prefix for client-visible environment variables
+
+## Key Environment Variables
+
+- `NEXT_PUBLIC_API_BASE_URL` — Backend API URL (default `http://localhost:3001`)
+- `NEXT_PUBLIC_ACCESS_PASS_NFT_ADDRESS` — AccessPassNFT contract address
+- `NEXT_PUBLIC_DEPOSIT_VAULT_ADDRESS` — DepositVault contract address
+- `NEXT_PUBLIC_CHAIN_ID` — Target chain ID
+
+## Testing
+
+- Vitest + @testing-library/react
+- Coverage threshold: 80% (v8)
+- Run: `npm run test -w @nodestay/web`

@@ -1,0 +1,36 @@
+---
+description: Testing standards — frameworks per layer, run commands, coverage requirements
+globs: "**/*.test.{ts,tsx},**/*.spec.{ts,tsx},**/test/**"
+alwaysApply: false
+---
+
+# Testing Standards
+
+## Frameworks by Layer
+
+| Package | Framework | Config |
+|---------|-----------|--------|
+| `apps/web` | Vitest + @testing-library/react | `vitest.config.ts`, 80% coverage threshold |
+| `apps/api` | Jest + Supertest | `jest.config.*` |
+| `packages/contracts` | Mocha + Chai (Hardhat) | `hardhat.config.ts` |
+| `packages/domain` | Vitest | `vitest.config.ts` |
+| `packages/api-client` | Vitest | `vitest.config.ts` |
+
+## Run Commands
+
+```bash
+npm run test                              # All workspaces
+npm run test -w @nodestay/web             # Frontend only
+npm run test -w @nodestay/api             # Backend only
+npm run test -w @nodestay/contracts       # Contracts only
+npm run test:coverage                     # Global coverage
+npm run coverage -w @nodestay/contracts   # Contract coverage (solidity-coverage)
+```
+
+## Conventions
+
+- Test files are co-located with source files or in a `test/` subdirectory
+- Contract tests use Hardhat's `loadFixture` pattern to reuse deployment state
+- API tests use `@nestjs/testing`'s `Test.createTestingModule`
+- Mock ERC-20 via `MockERC20.sol` or `MockERC20Config.sol`
+- Frontend component tests use `@testing-library/react`'s `render` + `screen`

@@ -1,4 +1,12 @@
 import { normalizeIdempotencyKey } from '@nodestay/domain';
+import type {
+  ComputeNodeItem,
+  SubmitJobBody,
+  SubmitJobResponse,
+  GetJobResponse,
+  CancelJobResponse,
+  JobResultResponse,
+} from '@nodestay/api-contracts';
 
 export interface NodeStayClientOptions {
   baseUrl: string;
@@ -139,28 +147,16 @@ export class NodeStayClient {
     });
   }
 
-  // --- Compute API (S6) ---
+  // --- Compute API (S6); types from @nodestay/api-contracts (I1) ---
 
   /** GET /v1/compute/nodes */
-  async listComputeNodes(): Promise<
-    Array<{
-      nodeId: string;
-      venueId: string;
-      seatId: string;
-      status: 'IDLE' | 'RESERVED' | 'COMPUTING' | 'OFFLINE';
-      pricePerHourMinor: number;
-    }>
-  > {
-    return await this.json('/v1/compute/nodes');
+  async listComputeNodes(): Promise<ComputeNodeItem[]> {
+    return await this.json<ComputeNodeItem[]>('/v1/compute/nodes');
   }
 
   /** POST /v1/compute/jobs */
-  async submitComputeJob(body: {
-    requesterId: string;
-    taskType: string;
-    taskSpec: { command: string; inputUri: string; outputUri: string; envVars?: Record<string, string>; dockerImage?: string };
-  }): Promise<{ jobId: string }> {
-    return await this.json('/v1/compute/jobs', {
+  async submitComputeJob(body: SubmitJobBody): Promise<SubmitJobResponse> {
+    return await this.json<SubmitJobResponse>('/v1/compute/jobs', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(body),
@@ -168,20 +164,20 @@ export class NodeStayClient {
   }
 
   /** GET /v1/compute/jobs/:jobId */
-  async getComputeJob(jobId: string): Promise<{ jobId: string; status: string }> {
-    return await this.json(`/v1/compute/jobs/${encodeURIComponent(jobId)}`);
+  async getComputeJob(jobId: string): Promise<GetJobResponse> {
+    return await this.json<GetJobResponse>(`/v1/compute/jobs/${encodeURIComponent(jobId)}`);
   }
 
   /** POST /v1/compute/jobs/:jobId/cancel */
-  async cancelComputeJob(jobId: string): Promise<{ jobId: string; cancelled: true }> {
-    return await this.json(`/v1/compute/jobs/${encodeURIComponent(jobId)}/cancel`, {
+  async cancelComputeJob(jobId: string): Promise<CancelJobResponse> {
+    return await this.json<CancelJobResponse>(`/v1/compute/jobs/${encodeURIComponent(jobId)}/cancel`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
     });
   }
 
   /** GET /v1/compute/jobs/:jobId/result */
-  async getComputeJobResult(jobId: string): Promise<{ jobId: string; resultUri: string | null }> {
-    return await this.json(`/v1/compute/jobs/${encodeURIComponent(jobId)}/result`);
+  async getComputeJobResult(jobId: string): Promise<JobResultResponse> {
+    return await this.json<JobResultResponse>(`/v1/compute/jobs/${encodeURIComponent(jobId)}/result`);
   }
 }

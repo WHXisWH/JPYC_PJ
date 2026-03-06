@@ -104,6 +104,26 @@ Service ──► Indexed (IndexedDB) ─────────► Polygon RPC
 
 > 约定：API Contract 与前端 Model **尽量复用 domain 类型**；若暂时无法复用，必须在 SPEC 中写明映射规则与差异字段。
 
+### 3.5 前端 Model 与 api-client 返回值类型对应表（I2）✅
+
+| api-client 方法 / 返回类型 | 前端 Model（apps/web/src/models/） | 说明 |
+|---------------------------|-------------------------------------|------|
+| `listVenues()` → `Array<{ venueId, name, address, timezone }>` | `venue.model.Venue` | 一一对应 |
+| `listPlans(venueId)` → `Array<{ planId, venueId, name, baseDurationMinutes, basePriceMinor, depositRequiredMinor }>` | `venue.model.Plan` | 一一对应 |
+| `verifyIdentity()` → `{ identityVerificationId }` | `identity.model.IdentityVerification` | 仅 id 时用返回值 |
+| `checkinSession()` → `{ sessionId }` | `session.model`（SessionId） | 一一对应 |
+| `checkoutSession()` → `JsonObject` | `session.model.CheckOutResult` | Contract 收口后与 Contract 类型一致 |
+| `getBalance()` → `{ currency, balanceMinor, depositHeldMinor }` | `user.model.Balance` | 一一对应 |
+| `createVenueAsMerchant()` → `{ venueId, name, address, timezone }` | `merchant.model` / Venue | 一一对应 |
+| `listComputeNodes()` → `ComputeNodeItem[]`（@nodestay/api-contracts） | `compute.model.ComputeNode` | Service 层将 API 的 nodeId/venueId/seatId/status/pricePerHourMinor 映射或补全为 ComputeNode（缺省由 IndexedDB 补全） |
+| `submitComputeJob()` → `SubmitJobResponse`（`{ jobId }`） | `compute.model`（jobId 写入 store） | 一一对应 |
+| `getComputeJob()` → `GetJobResponse`（`{ jobId, status }`） | `compute.model.ComputeJob`（部分） | status 与 domain ComputeJobStatus 一致 |
+| `cancelComputeJob()` → `CancelJobResponse` | store 更新 job 状态 | 一一对应 |
+| `getComputeJobResult()` → `JobResultResponse`（`{ jobId, resultUri }`） | `compute.model`（resultUri） | 一一对应 |
+| `purchasePass()` → 依 passes.contract | `pass.model.PurchasePassResult` | 与 API Contract 响应一致 |
+
+类型来源约定：**Compute 相关 HTTP 响应类型** 以 `@nodestay/api-contracts` 为准（与后端 Contract 一致）；前端 Model 为展示与 Store 用，可由 Service 将 api-client 返回值与 IndexedDB 数据合并后写入 Store。
+
 ---
 
 ## 4. 合约层接口（Smart Contracts）✅
@@ -210,6 +230,12 @@ Indexer 输入事件：
 
 > **硬约束**：链上的数据存储在前端 indexed（IndexedDB）里。  
 > 含义：前端维护“事件派生 Read Model”，可随时清空并从链上事件重建。
+
+### 5.0 链上交互栈与 Provider 策略（W3）✅
+
+- **选型**：前端链上读操作（getLogs、getBlockNumber）使用 **viem**（轻量、与 ethers 同源、TypeScript 友好）。写操作（如用户 sign 提交 Job）若需前端发起交易，同样通过 viem 的 `createPublicClient` / `createWalletClient`。
+- **Provider 策略**：仅需 HTTP RPC，无需 WebSocket。Indexer 按轮询拉取新区块即可。配置来源：`NEXT_PUBLIC_RPC_URL`（默认 Polygon Amoy 公共 RPC）、`NEXT_PUBLIC_CHAIN_ID`（默认 80002）。
+- **合约地址**：`NEXT_PUBLIC_COMPUTE_MARKET_ADDRESS`、`NEXT_PUBLIC_ACCESS_PASS_NFT_ADDRESS`、`NEXT_PUBLIC_DEPOSIT_VAULT_ADDRESS`；缺省时使用 Amoy 测试网已部署地址（见 `apps/web/src/services/config.ts`）。
 
 ### 5.1 Read Model 表结构（建议）🆕
 

@@ -10,9 +10,11 @@ export const CONTRACT_ADDRESSES = {
   jpycToken:     process.env.NEXT_PUBLIC_JPYC_TOKEN_ADDRESS     ?? '0x2fA62C3E53b67A9678F4Aac14E2843c1dF7b8AfD',
 } as const;
 
-// チェーン設定
+// チェーン設定（W3: 前端链上交互栈 = viem；Provider = 公共/自定义 RPC）
 export const CHAIN_CONFIG = {
-  id:   Number(process.env.NEXT_PUBLIC_CHAIN_ID ?? '80002'),
+  id: Number(process.env.NEXT_PUBLIC_CHAIN_ID ?? '80002'),
   name: process.env.NEXT_PUBLIC_CHAIN_NAME ?? 'Polygon Amoy',
+  /** RPC URL for read-only getLogs / getBlockNumber (no WS required for indexer) */
+  rpcUrl: process.env.NEXT_PUBLIC_RPC_URL ?? 'https://rpc-amoy.polygon.technology',
 } as const;
 

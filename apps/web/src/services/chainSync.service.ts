@@ -1,14 +1,14 @@
 /**
  * ChainSyncService: start/stop/syncOnce/status; 同步状态写入 chainSync.store（S10, W12）.
- * Stub until Indexer is implemented; then wire to real indexer.
  */
 
+import { syncComputeMarketOnce, getChainSyncStatus } from '../indexed';
+import { CHAIN_CONFIG, CONTRACT_ADDRESSES } from './config';
 import type { ChainSyncStatus } from '../stores/chainSync.store';
 import { getChainSyncStore, setChainSyncStore } from '../stores/chainSync.store';
 
 export const ChainSyncService = {
   async start(): Promise<void> {
-    // Stub: when Indexer ready, start background sync.
     setChainSyncStore({ status: null, loading: false, error: null });
   },
 
@@ -19,14 +19,18 @@ export const ChainSyncService = {
   async syncOnce(): Promise<void> {
     setChainSyncStore({ loading: true, error: null });
     try {
-      // Stub: no indexer yet. When ready: run one sync cycle and set status.
+      await syncComputeMarketOnce(
+        { computeMarketAddress: CONTRACT_ADDRESSES.computeMarket as `0x${string}` },
+        false
+      );
+      const status = await getChainSyncStatus(CHAIN_CONFIG.id, CONTRACT_ADDRESSES.computeMarket);
       setChainSyncStore({
-        status: {
+        status: status ?? {
+          isSyncing: false,
           chainId: 0,
           contractAddress: '',
           lastProcessedBlock: 0,
           lastFinalizedBlock: 0,
-          isSyncing: false,
         },
         loading: false,
       });
@@ -40,6 +44,9 @@ export const ChainSyncService = {
   },
 
   async status(): Promise<ChainSyncStatus | null> {
-    return getChainSyncStore().status ?? null;
+    const s = getChainSyncStore().status;
+    if (s) return s;
+    const status = await getChainSyncStatus(CHAIN_CONFIG.id, CONTRACT_ADDRESSES.computeMarket);
+    return status;
   },
 };

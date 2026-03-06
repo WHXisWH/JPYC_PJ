@@ -8,6 +8,13 @@ export interface VenueRecord {
   name: string;
   address: string;
   timezone: string;
+  latitude: number;
+  longitude: number;
+  amenities?: string[];
+  openHours?: string;
+  availableSeats?: number;
+  totalSeats?: number;
+  cheapestPlanMinor?: number;
 }
 
 export interface PricePlanRecord {
@@ -92,22 +99,37 @@ export class StoreService {
   private readonly disputes = new Map<Id, DisputeRecord>();
 
   constructor() {
-    // 最小のダミーデータ（MVPの疎通用）
-    const venueId = 'venue_demo';
-    this.venues.set(venueId, { venueId, name: 'デモ店舗', address: '東京都', timezone: 'Asia/Tokyo' });
+    this.seedVenues();
+  }
 
-    const planId = 'plan_3h';
-    this.plans.set(planId, {
-      planId,
-      venueId,
-      name: '3時間パック',
-      baseDurationMinutes: 180,
-      basePriceMinor: 1500,
-      depositRequiredMinor: 500,
-    });
+  private seedVenues() {
+    const venues: VenueRecord[] = [
+      { venueId: 'venue_shibuya_01', name: 'NodeCafe 渋谷センター', address: '東京都渋谷区宇田川町21-6', timezone: 'Asia/Tokyo', latitude: 35.6610, longitude: 139.6983, amenities: ['Wi-Fi', 'GPU', '個室', 'ドリンクバー'], openHours: '24時間営業', availableSeats: 12, totalSeats: 40, cheapestPlanMinor: 500 },
+      { venueId: 'venue_shibuya_02', name: 'ComputeHub 道玄坂', address: '東京都渋谷区道玄坂2-10-12', timezone: 'Asia/Tokyo', latitude: 35.6571, longitude: 139.6967, amenities: ['Wi-Fi', 'GPU', 'ドリンクバー', 'シャワー'], openHours: '24時間営業', availableSeats: 5, totalSeats: 25, cheapestPlanMinor: 800 },
+      { venueId: 'venue_shibuya_03', name: 'サイレントスペース 神南', address: '東京都渋谷区神南1-12-16', timezone: 'Asia/Tokyo', latitude: 35.6635, longitude: 139.6993, amenities: ['Wi-Fi', '個室', '電源'], openHours: '07:00〜23:00', availableSeats: 8, totalSeats: 15, cheapestPlanMinor: 300 },
+      { venueId: 'venue_harajuku_01', name: 'NodeStation 原宿', address: '東京都渋谷区神宮前1-8-5', timezone: 'Asia/Tokyo', latitude: 35.6702, longitude: 139.7027, amenities: ['Wi-Fi', '電源', 'ドリンクバー'], openHours: '09:00〜22:00', availableSeats: 15, totalSeats: 30, cheapestPlanMinor: 400 },
+      { venueId: 'venue_daikanyama_01', name: 'DeepWork 代官山', address: '東京都渋谷区代官山町17-6', timezone: 'Asia/Tokyo', latitude: 35.6488, longitude: 139.7034, amenities: ['Wi-Fi', '個室', '電源', 'カフェ'], openHours: '08:00〜22:00', availableSeats: 3, totalSeats: 10, cheapestPlanMinor: 600 },
+      { venueId: 'venue_ebisu_01', name: 'GPUラボ 恵比寿', address: '東京都渋谷区恵比寿南1-5-5', timezone: 'Asia/Tokyo', latitude: 35.6467, longitude: 139.7101, amenities: ['Wi-Fi', 'GPU', 'ドリンクバー', '電源'], openHours: '24時間営業', availableSeats: 7, totalSeats: 20, cheapestPlanMinor: 700 },
+      { venueId: 'venue_shibuya_04', name: 'ネットパーク 桜丘', address: '東京都渋谷区桜丘町22-14', timezone: 'Asia/Tokyo', latitude: 35.6548, longitude: 139.7010, amenities: ['Wi-Fi', 'ドリンクバー', 'シャワー', 'コミック'], openHours: '24時間営業', availableSeats: 20, totalSeats: 50, cheapestPlanMinor: 350 },
+      { venueId: 'venue_omotesando_01', name: 'クリエイターズHQ 表参道', address: '東京都渋谷区神宮前4-9-2', timezone: 'Asia/Tokyo', latitude: 35.6659, longitude: 139.7093, amenities: ['Wi-Fi', 'GPU', '個室', 'カフェ', '電源'], openHours: '08:00〜23:00', availableSeats: 4, totalSeats: 12, cheapestPlanMinor: 1000 },
+      { venueId: 'venue_shinsen_01', name: 'バジェットネット 神泉', address: '東京都渋谷区円山町5-3', timezone: 'Asia/Tokyo', latitude: 35.6567, longitude: 139.6926, amenities: ['Wi-Fi', '電源'], openHours: '10:00〜02:00', availableSeats: 25, totalSeats: 35, cheapestPlanMinor: 200 },
+      { venueId: 'venue_yoyogi_01', name: 'NodeBase 代々木', address: '東京都渋谷区代々木1-30-1', timezone: 'Asia/Tokyo', latitude: 35.6833, longitude: 139.7020, amenities: ['Wi-Fi', 'GPU', '電源', 'ドリンクバー'], openHours: '24時間営業', availableSeats: 10, totalSeats: 28, cheapestPlanMinor: 450 },
+    ];
 
-    const seatId = 'seat_demo';
-    this.seats.set(seatId, { seatId, venueId, type: 'BOOTH', status: 'AVAILABLE' });
+    for (const v of venues) {
+      this.venues.set(v.venueId, v);
+    }
+
+    const defaultPlans: PricePlanRecord[] = [
+      { planId: 'plan_1h', venueId: 'venue_shibuya_01', name: '1時間パック', baseDurationMinutes: 60, basePriceMinor: 500, depositRequiredMinor: 200 },
+      { planId: 'plan_3h', venueId: 'venue_shibuya_01', name: '3時間パック', baseDurationMinutes: 180, basePriceMinor: 1200, depositRequiredMinor: 500 },
+      { planId: 'plan_night', venueId: 'venue_shibuya_01', name: 'ナイトパック', baseDurationMinutes: 480, basePriceMinor: 2000, depositRequiredMinor: 800 },
+    ];
+    for (const p of defaultPlans) {
+      this.plans.set(p.planId, p);
+    }
+
+    this.seats.set('seat_demo', { seatId: 'seat_demo', venueId: 'venue_shibuya_01', type: 'BOOTH', status: 'AVAILABLE' });
   }
 
   listVenues(): VenueRecord[] {
@@ -118,9 +140,9 @@ export class StoreService {
     return [...this.plans.values()].filter((p) => p.venueId === venueId);
   }
 
-  createVenue(input: { name: string; address: string; timezone: string }): VenueRecord {
+  createVenue(input: { name: string; address: string; timezone: string; latitude?: number; longitude?: number; amenities?: string[]; openHours?: string }): VenueRecord {
     const venueId = this.id('venue');
-    const v: VenueRecord = { venueId, ...input };
+    const v: VenueRecord = { venueId, latitude: input.latitude ?? 0, longitude: input.longitude ?? 0, ...input };
     this.venues.set(venueId, v);
     return v;
   }

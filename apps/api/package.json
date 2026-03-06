@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "dev": "tsx watch src/main.ts",
+    "dev": "node --require reflect-metadata -r @swc-node/register --watch src/main.ts",
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/main.js",
     "test": "jest",
@@ -23,6 +23,8 @@
   },
   "devDependencies": {
     "@nestjs/testing": "^10.4.8",
+    "@swc-node/register": "^1.11.1",
+    "@swc/core": "^1.15.18",
     "@types/express": "^4.17.21",
     "@types/jest": "^29.5.14",
     "@types/node": "^20.17.17",

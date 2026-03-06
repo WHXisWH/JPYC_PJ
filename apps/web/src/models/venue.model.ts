@@ -9,6 +9,13 @@ export interface VenueListItem {
   name: string;
   address: string;
   timezone: string;
+  latitude: number;
+  longitude: number;
+  amenities?: string[];
+  openHours?: string;
+  availableSeats?: number;
+  totalSeats?: number;
+  cheapestPlanMinor?: number;
 }
 
 /** List item from GET /v1/venues/:venueId/plans */

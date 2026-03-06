@@ -10,3 +10,4 @@ export * from './usePassPurchase';
 export * from './usePassesPage';
 export * from './useChainSyncStatus';
 export * from './useMerchantCompute';
+export * from './useExplorePage';

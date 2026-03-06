@@ -391,3 +391,68 @@ h1, h2, h3, h4, h5, h6 {
 .animate-pulse-slow {
   animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+/* MapLibre GL Popup */
+.maplibregl-popup-content-wrapper {
+  background: #FFFFFF !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3), 0 8px 10px -6px rgba(0,0,0,0.2) !important;
+  border: 1px solid #E2E8F0 !important;
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.maplibregl-popup-content {
+  background: transparent !important;
+  margin: 12px 14px !important;
+  font-family: var(--font-sans) !important;
+}
+
+.maplibregl-popup-tip {
+  border-top-color: #FFFFFF !important;
+}
+
+.maplibregl-popup-close-button {
+  color: #94A3B8 !important;
+  font-size: 20px !important;
+  top: 8px !important;
+  right: 10px !important;
+  background: transparent !important;
+  border: none !important;
+  cursor: pointer !important;
+}
+
+.maplibregl-popup-close-button:hover {
+  color: #475569 !important;
+  background: transparent !important;
+}
+
+.maplibregl-ctrl-group {
+  background: #1E293B !important;
+  border-radius: 0.75rem !important;
+  overflow: hidden;
+  box-shadow: 0 1px 3px 0 rgba(0,0,0,0.2), 0 1px 2px -1px rgba(0,0,0,0.15) !important;
+  border: 1px solid #334155 !important;
+}
+
+.maplibregl-ctrl-group button {
+  background: #1E293B !important;
+  border: none !important;
+  color: #94A3B8 !important;
+  width: 32px !important;
+  height: 32px !important;
+}
+
+.maplibregl-ctrl-group button:hover {
+  background: #334155 !important;
+  color: #E2E8F0 !important;
+}
+
+.maplibregl-ctrl-group button+button {
+  border-top: 1px solid #334155 !important;
+}
+
+/* Custom venue popup class */
+.venue-popup .maplibregl-popup-content-wrapper {
+  min-width: 240px;
+}

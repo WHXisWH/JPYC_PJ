@@ -21,7 +21,7 @@ export class NodeStayClient {
 
   constructor(options: NodeStayClientOptions) {
     this.baseUrl = options.baseUrl.replace(/\/+$/, '');
-    this.fetchImpl = options.fetchImpl ?? fetch;
+    this.fetchImpl = options.fetchImpl ?? ((...args: Parameters<typeof fetch>) => fetch(...args));
   }
 
   private async json<T>(path: string, init?: RequestInit): Promise<T> {
@@ -34,7 +34,21 @@ export class NodeStayClient {
     return await this.json('/v1/health');
   }
 
-  async listVenues(): Promise<Array<{ venueId: string; name: string; address: string; timezone: string }>> {
+  async listVenues(): Promise<
+    Array<{
+      venueId: string;
+      name: string;
+      address: string;
+      timezone: string;
+      latitude: number;
+      longitude: number;
+      amenities?: string[];
+      openHours?: string;
+      availableSeats?: number;
+      totalSeats?: number;
+      cheapestPlanMinor?: number;
+    }>
+  > {
     return await this.json('/v1/venues');
   }
 

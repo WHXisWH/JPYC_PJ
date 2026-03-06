@@ -13,6 +13,7 @@ import { UserService } from '../../services/user.service';
 const NAV_ITEMS = [
   { href: '/', label: 'ホーム' },
   { href: '/venues', label: '店舗を探す' },
+  { href: '/explore', label: 'マップで探す' },
   { href: '/passes', label: 'マイパス' },
   { href: '/sessions', label: 'セッション' },
   { href: '/compute', label: '算力マーケット' },
@@ -50,7 +51,7 @@ export function Header() {
           {/* ロゴ */}
           <Link href="/" className="flex items-center gap-2.5 group" onClick={closeMobile}>
             {/* アイコン */}
-            <div className="w-8 h-8 bg-gradient-to-br from-brand-500 to-brand-700 rounded-lg flex items-center justify-center shadow-sm group-hover:shadow-glow transition-shadow">
+            <div className="w-8 h-8 bg-linear-to-br from-brand-500 to-brand-700 rounded-lg flex items-center justify-center shadow-sm group-hover:shadow-glow transition-shadow">
               <svg
                 width="18"
                 height="18"

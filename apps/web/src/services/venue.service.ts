@@ -18,12 +18,14 @@ export const VenueService = {
 
   /** 拉取门店列表并写入 store（原始列表）；筛选/排序由 Controller 在 hook 内完成。 */
   async listVenues(): Promise<void> {
-    setVenueStore({ loading: true, error: null });
+    setVenueStore({ loading: true });
+    const minDelay = new Promise((r) => setTimeout(r, 600));
     try {
       const client = createNodeStayClient();
-      const venues = await client.listVenues();
+      const [venues] = await Promise.all([client.listVenues(), minDelay]);
       setVenueStore({ venues, loading: false, error: null });
     } catch (e) {
+      await minDelay;
       setVenueStore({
         loading: false,
         error: e instanceof Error ? e.message : '取得に失敗しました',

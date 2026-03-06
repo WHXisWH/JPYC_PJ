@@ -1,17 +1,10 @@
 import { Body, Controller, Headers, HttpException, HttpStatus, Param, Post } from '@nestjs/common';
-import { z } from 'zod';
 import { normalizeIdempotencyKey } from '@nodestay/domain';
+import { PurchasePassBodySchema, type PurchasePassBody } from '../contracts';
 import { IdempotencyService } from '../services/idempotency.service';
 import { LedgerService } from '../services/ledger.service';
 import { StoreService } from '../services/store.service';
 import { FeatureFlagsService } from '../services/featureFlags.service';
-
-const PurchasePassBodySchema = z.object({
-  planId: z.string().min(1),
-  venueId: z.string().min(1),
-  paymentMethod: z.literal('JPYC'),
-});
-type PurchasePassBody = z.infer<typeof PurchasePassBodySchema>;
 
 @Controller('/v1/passes')
 export class PassesController {

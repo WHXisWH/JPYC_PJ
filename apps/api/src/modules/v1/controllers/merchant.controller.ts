@@ -1,36 +1,12 @@
 import { Body, Controller, HttpException, HttpStatus, Param, Post, Put } from '@nestjs/common';
-import { z } from 'zod';
+import {
+  CreateVenueBodySchema,
+  UpsertPlanBodySchema,
+  UpsertSeatBodySchema,
+  EnableComputeBodySchema,
+  CreateDisputeBodySchema,
+} from '../contracts';
 import { StoreService } from '../services/store.service';
-
-const CreateVenueBodySchema = z.object({
-  name: z.string().min(1),
-  address: z.string().min(1),
-  timezone: z.string().min(1),
-});
-
-const UpsertPlanBodySchema = z.object({
-  planId: z.string().min(1).optional(),
-  name: z.string().min(1),
-  baseDurationMinutes: z.number().int().positive(),
-  basePriceMinor: z.number().int().nonnegative(),
-  depositRequiredMinor: z.number().int().nonnegative(),
-});
-
-const UpsertSeatBodySchema = z.object({
-  seatId: z.string().min(1).optional(),
-  type: z.enum(['OPEN', 'BOOTH', 'FLAT', 'VIP']),
-  status: z.enum(['AVAILABLE', 'OCCUPIED', 'MAINTENANCE', 'COMPUTE_MODE']).optional(),
-});
-
-const EnableComputeBodySchema = z.object({
-  enable: z.boolean().default(true),
-  // 将来的には availableWindows 等をここで受け取る
-});
-
-const CreateDisputeBodySchema = z.object({
-  venueId: z.string().min(1),
-  reason: z.string().min(1),
-});
 
 @Controller('/v1/merchant')
 export class MerchantController {

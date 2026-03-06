@@ -1,4 +1,5 @@
 import { Controller, Get, Param } from '@nestjs/common';
+import type { VenuesListResponse, PlansListResponse } from '../contracts';
 import { StoreService } from '../services/store.service';
 
 @Controller('/v1/venues')
@@ -6,12 +7,12 @@ export class VenuesController {
   constructor(private readonly store: StoreService) {}
 
   @Get()
-  list() {
+  list(): VenuesListResponse {
     return this.store.listVenues();
   }
 
   @Get('/:venueId/plans')
-  plans(@Param('venueId') venueId: string) {
+  plans(@Param('venueId') venueId: string): PlansListResponse {
     return this.store.listPlansByVenue(venueId);
   }
 }

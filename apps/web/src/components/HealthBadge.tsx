@@ -1,19 +1,16 @@
 'use client';
 
-// APIヘルスチェックバッジ
+// APIヘルスチェックバッジ（SPEC V7: HealthService 経由）
 // バックエンドAPIの接続状態をリアルタイムで表示する
 
 import { useEffect, useState } from 'react';
-import { createNodeStayClient } from '../services/nodestay';
+import { HealthService } from '../services/health.service';
 
 export function HealthBadge() {
-  // API接続状態：null=確認中、true=正常、false=エラー
   const [ok, setOk] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const client = createNodeStayClient();
-    client
-      .health()
+    HealthService.check()
       .then(() => setOk(true))
       .catch(() => setOk(false));
   }, []);

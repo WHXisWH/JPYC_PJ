@@ -1,30 +1,11 @@
 'use client';
 
-// 店舗詳細ページ
-// 店舗情報・料金プラン・座席情報・利用権購入フローを表示する
+// 店舗詳細ページ（View 層：useVenueDetailPage の戻り値を表示のみ、SPEC V2）
 
-import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { createNodeStayClient } from '../../../services/nodestay';
-
-// 料金プランの型定義
-interface Plan {
-  planId: string;
-  venueId: string;
-  name: string;
-  baseDurationMinutes: number;
-  basePriceMinor: number;
-  depositRequiredMinor: number;
-}
-
-// 店舗情報の型定義
-interface Venue {
-  venueId: string;
-  name: string;
-  address: string;
-  timezone: string;
-}
+import { useVenueDetailPage } from '../../../hooks';
+import type { PlanListItem } from '../../../models/venue.model';
 
 // ===== 時間フォーマットユーティリティ =====
 function formatDuration(minutes: number): string {
@@ -45,9 +26,9 @@ function PlanCard({
   isPopular,
   onSelect,
 }: {
-  plan: Plan;
+  plan: PlanListItem;
   isPopular?: boolean;
-  onSelect: (plan: Plan) => void;
+  onSelect: (plan: PlanListItem) => void;
 }) {
   return (
     <div
@@ -153,7 +134,7 @@ function PurchaseModal({
   onConfirm,
   purchasing,
 }: {
-  plan: Plan;
+  plan: PlanListItem;
   venueName: string;
   onClose: () => void;
   onConfirm: () => void;
@@ -254,76 +235,20 @@ function PurchaseModal({
 // ===== ページコンポーネント =====
 export default function VenueDetailPage() {
   const params = useParams<{ venueId: string }>();
-  const venueId = params.venueId;
+  const venueId = params.venueId as string | undefined;
 
-  // 店舗情報の状態
-  const [venue, setVenue] = useState<Venue | null>(null);
-  // 料金プランの状態
-  const [plans, setPlans] = useState<Plan[]>([]);
-  // ローディング状態
-  const [loading, setLoading] = useState(true);
-  // エラー状態
-  const [error, setError] = useState(false);
-  // 選択されたプラン（購入確認モーダル用）
-  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
-  // 購入処理中フラグ
-  const [purchasing, setPurchasing] = useState(false);
-  // 購入成功フラグ
-  const [purchaseSuccess, setPurchaseSuccess] = useState(false);
-
-  // 店舗・プランデータを取得する
-  const fetchData = useCallback(() => {
-    if (!venueId) return;
-    setLoading(true);
-    setError(false);
-
-    const client = createNodeStayClient();
-
-    // 店舗一覧から該当店舗を取得
-    Promise.all([
-      client.listVenues().then((venues) => venues.find((v) => v.venueId === venueId)),
-      client.listPlans(venueId),
-    ])
-      .then(([venueData, plansData]) => {
-        if (venueData) {
-          setVenue(venueData);
-        }
-        setPlans(plansData);
-        setLoading(false);
-      })
-      .catch(() => {
-        setError(true);
-        setLoading(false);
-      });
-  }, [venueId]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  // 利用権購入処理
-  const handlePurchase = async () => {
-    if (!selectedPlan) return;
-    setPurchasing(true);
-
-    const client = createNodeStayClient();
-    // 冪等性キーを生成（ユーザーID + プランID + タイムスタンプ）
-    const idempotencyKey = `purchase-${selectedPlan.planId}-${Date.now()}`;
-
-    try {
-      await client.purchasePass(
-        { planId: selectedPlan.planId, venueId, paymentMethod: 'JPYC' },
-        idempotencyKey
-      );
-      setPurchaseSuccess(true);
-      setSelectedPlan(null);
-    } catch {
-      // 購入エラー（残高不足など）
-      alert('購入処理に失敗しました。JPYC残高を確認してください。');
-    } finally {
-      setPurchasing(false);
-    }
-  };
+  const {
+    venue,
+    plans,
+    loading,
+    error,
+    refresh,
+    selectedPlan,
+    setSelectedPlan,
+    purchasing,
+    purchaseSuccess,
+    handlePurchase,
+  } = useVenueDetailPage(venueId);
 
   // ローディング中
   if (loading) {
@@ -362,7 +287,7 @@ export default function VenueDetailPage() {
         <div className="text-5xl mb-4">⚠️</div>
         <h2 className="text-xl font-bold text-slate-700 mb-2">データの取得に失敗しました</h2>
         <p className="text-slate-400 text-sm mb-6">ネットワーク接続を確認の上、再試行してください</p>
-        <button onClick={fetchData} className="btn-primary">
+        <button onClick={refresh} className="btn-primary">
           再試行
         </button>
       </div>

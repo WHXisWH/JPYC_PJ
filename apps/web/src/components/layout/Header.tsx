@@ -1,12 +1,13 @@
 'use client';
 
-// ヘッダーコンポーネント
+// ヘッダーコンポーネント（SPEC V7: UserService 経由で残高取得）
 // ナビゲーション、ウォレット残高表示、モバイルメニューを管理する
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { createNodeStayClient } from '../../services/nodestay';
+import { useUserStore } from '../../stores/user.store';
+import { UserService } from '../../services/user.service';
 
 // ナビゲーション項目の定義
 const NAV_ITEMS = [
@@ -19,29 +20,18 @@ const NAV_ITEMS = [
 
 export function Header() {
   const pathname = usePathname();
-  // モバイルメニューの開閉状態
   const [mobileOpen, setMobileOpen] = useState(false);
-  // JPYC残高の状態
-  const [balance, setBalance] = useState<number | null>(null);
-  // スクロール状態（ヘッダーの背景を変化させるため）
+  const balance = useUserStore((s) => s.balance?.balanceMinor ?? null);
   const [scrolled, setScrolled] = useState(false);
 
-  // スクロールイベントリスナーの登録
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // JPYC残高の取得
   useEffect(() => {
-    const client = createNodeStayClient();
-    client
-      .getBalance()
-      .then((b) => setBalance(b.balanceMinor))
-      .catch(() => {
-        // 残高取得失敗時はnullのまま（未ログイン等）
-      });
+    UserService.getBalance().catch(() => {});
   }, []);
 
   // モバイルメニューを閉じる

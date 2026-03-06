@@ -1,19 +1,8 @@
 import { Body, Controller, Headers, HttpException, HttpStatus, Post } from '@nestjs/common';
-import { z } from 'zod';
 import { normalizeIdempotencyKey } from '@nodestay/domain';
+import { CheckInBodySchema, CheckoutBodySchema, CheckoutResponseSchema } from '../contracts';
 import { IdempotencyService } from '../services/idempotency.service';
 import { StoreService } from '../services/store.service';
-
-const CheckInBodySchema = z.object({
-  passId: z.string().min(1),
-  seatId: z.string().min(1),
-  venueId: z.string().min(1),
-  identityVerificationId: z.string().min(1).optional(),
-});
-
-const CheckoutBodySchema = z.object({
-  sessionId: z.string().min(1),
-});
 
 @Controller('/v1/sessions')
 export class SessionsController {
@@ -62,8 +51,11 @@ export class SessionsController {
     const ended = this.store.endSession(parsed.data.sessionId);
     if (!ended) throw new HttpException({ message: 'セッションが見つかりません' }, HttpStatus.NOT_FOUND);
 
-    const response = { usedMinutes: 0, charges: { baseMinor: 0, overtimeMinor: 0, amenitiesMinor: 0, damageMinor: 0 } };
-    this.idempotency.save(key, requestHash, response as any);
+    const response = CheckoutResponseSchema.parse({
+      usedMinutes: 0,
+      charges: { baseMinor: 0, overtimeMinor: 0, amenitiesMinor: 0, damageMinor: 0 },
+    });
+    this.idempotency.save(key, requestHash, response);
     return response;
   }
 }

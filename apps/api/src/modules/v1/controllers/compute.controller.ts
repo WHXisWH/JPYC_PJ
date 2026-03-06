@@ -1,19 +1,7 @@
 import { Body, Controller, HttpException, HttpStatus, Param, Post, Get } from '@nestjs/common';
-import { z } from 'zod';
+import { SubmitJobBodySchema } from '../contracts';
 import { FeatureFlagsService } from '../services/featureFlags.service';
 import { StoreService } from '../services/store.service';
-
-const SubmitJobBodySchema = z.object({
-  requesterId: z.string().min(1),
-  taskType: z.string().min(1),
-  taskSpec: z.object({
-    command: z.string().min(1),
-    inputUri: z.string().min(1),
-    outputUri: z.string().min(1),
-    envVars: z.record(z.string()),
-    dockerImage: z.string().min(1).optional(),
-  }),
-});
 
 @Controller('/v1/compute')
 export class ComputeController {

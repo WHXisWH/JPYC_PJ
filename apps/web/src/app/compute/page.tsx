@@ -1,168 +1,15 @@
 'use client';
 
-// 算力マーケットプレイスページ
-// 遊休PCをJPYCで貸し出す需要側と、算力を提供する供給側の両面マーケット画面
+// 算力マーケットページ（View 層：useComputePage の戻り値を表示のみ、SPEC V3）
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useComputePage } from '../../hooks';
+import type { ComputeNode, ComputeJob, TaskType } from '../../models/compute.model';
+import type { NodeStatus, JobStatus } from '../../models/compute.model';
 
-// ===== 型定義 =====
+// ===== ユーティリティ（View 表示用） =====
 
-// 算力タスク種別
-type TaskType = 'ML_TRAINING' | 'RENDERING' | 'ZK_PROVING' | 'GENERAL';
-
-// ノードステータス
-type NodeStatus = 'IDLE' | 'RESERVED' | 'COMPUTING' | 'OFFLINE';
-
-// ジョブステータス
-type JobStatus = 'PENDING' | 'ASSIGNED' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
-
-// 算力ノードの型
-interface ComputeNode {
-  nodeId: string;
-  venueName: string;
-  address: string;
-  specs: {
-    cpuModel: string;
-    cpuCores: number;
-    gpuModel: string;
-    vram: number;
-    ram: number;
-  };
-  status: NodeStatus;
-  pricePerHourMinor: number; // JPYC最小単位
-  minBookingHours: number;
-  maxBookingHours: number;
-  supportedTasks: TaskType[];
-  availableNow: boolean;
-}
-
-// 算力ジョブの型
-interface ComputeJob {
-  jobId: string;
-  taskType: TaskType;
-  venueName: string;
-  status: JobStatus;
-  estimatedHours: number;
-  actualHours?: number;
-  priceMinor: number;
-  startAt?: string;
-  endAt?: string;
-  resultHash?: string;
-}
-
-// ===== モックデータ =====
-
-const MOCK_NODES: ComputeNode[] = [
-  {
-    nodeId: 'node-001',
-    venueName: '快適ネットカフェ 秋葉原店',
-    address: '東京都千代田区外神田',
-    specs: { cpuModel: 'Core i9-13900K', cpuCores: 24, gpuModel: 'RTX 4090', vram: 24, ram: 64 },
-    status: 'IDLE',
-    pricePerHourMinor: 120000, // 1200 JPYC/時間
-    minBookingHours: 1,
-    maxBookingHours: 8,
-    supportedTasks: ['ML_TRAINING', 'RENDERING', 'ZK_PROVING', 'GENERAL'],
-    availableNow: true,
-  },
-  {
-    nodeId: 'node-002',
-    venueName: 'ネットカフェ新宿西口店',
-    address: '東京都新宿区西新宿',
-    specs: { cpuModel: 'Ryzen 9 7950X', cpuCores: 32, gpuModel: 'RTX 3090', vram: 24, ram: 128 },
-    status: 'IDLE',
-    pricePerHourMinor: 90000, // 900 JPYC/時間
-    minBookingHours: 2,
-    maxBookingHours: 12,
-    supportedTasks: ['ML_TRAINING', 'RENDERING', 'GENERAL'],
-    availableNow: true,
-  },
-  {
-    nodeId: 'node-003',
-    venueName: '電脳空間カフェ 渋谷店',
-    address: '東京都渋谷区道玄坂',
-    specs: { cpuModel: 'Core i7-12700K', cpuCores: 12, gpuModel: 'RTX 3080', vram: 10, ram: 32 },
-    status: 'COMPUTING',
-    pricePerHourMinor: 60000, // 600 JPYC/時間
-    minBookingHours: 1,
-    maxBookingHours: 6,
-    supportedTasks: ['RENDERING', 'GENERAL'],
-    availableNow: false,
-  },
-  {
-    nodeId: 'node-004',
-    venueName: '快活カフェ 池袋東口店',
-    address: '東京都豊島区東池袋',
-    specs: { cpuModel: 'Core i9-12900K', cpuCores: 16, gpuModel: 'RTX 4080', vram: 16, ram: 64 },
-    status: 'IDLE',
-    pricePerHourMinor: 100000, // 1000 JPYC/時間
-    minBookingHours: 1,
-    maxBookingHours: 10,
-    supportedTasks: ['ML_TRAINING', 'RENDERING', 'ZK_PROVING', 'GENERAL'],
-    availableNow: true,
-  },
-  {
-    nodeId: 'node-005',
-    venueName: 'ゲーミングカフェ 浜松町店',
-    address: '東京都港区浜松町',
-    specs: { cpuModel: 'Ryzen 7 5800X', cpuCores: 8, gpuModel: 'RTX 3070', vram: 8, ram: 32 },
-    status: 'OFFLINE',
-    pricePerHourMinor: 50000, // 500 JPYC/時間
-    minBookingHours: 1,
-    maxBookingHours: 4,
-    supportedTasks: ['RENDERING', 'GENERAL'],
-    availableNow: false,
-  },
-  {
-    nodeId: 'node-006',
-    venueName: '快適ネットカフェ 上野店',
-    address: '東京都台東区上野',
-    specs: { cpuModel: 'Core i9-14900K', cpuCores: 24, gpuModel: 'RTX 4090', vram: 24, ram: 128 },
-    status: 'IDLE',
-    pricePerHourMinor: 130000, // 1300 JPYC/時間
-    minBookingHours: 2,
-    maxBookingHours: 24,
-    supportedTasks: ['ML_TRAINING', 'ZK_PROVING', 'GENERAL'],
-    availableNow: true,
-  },
-];
-
-const MOCK_MY_JOBS: ComputeJob[] = [
-  {
-    jobId: 'job-001',
-    taskType: 'ML_TRAINING',
-    venueName: '快適ネットカフェ 秋葉原店',
-    status: 'RUNNING',
-    estimatedHours: 4,
-    priceMinor: 480000,
-    startAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    jobId: 'job-002',
-    taskType: 'RENDERING',
-    venueName: 'ネットカフェ新宿西口店',
-    status: 'COMPLETED',
-    estimatedHours: 2,
-    actualHours: 1.8,
-    priceMinor: 162000,
-    startAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-    endAt: new Date(Date.now() - 22 * 60 * 60 * 1000).toISOString(),
-    resultHash: '0xabc123...',
-  },
-  {
-    jobId: 'job-003',
-    taskType: 'ZK_PROVING',
-    venueName: '快活カフェ 池袋東口店',
-    status: 'PENDING',
-    estimatedHours: 6,
-    priceMinor: 600000,
-  },
-];
-
-// ===== ユーティリティ =====
-
-// タスク種別ラベル
 const TASK_TYPE_CONFIG: Record<TaskType, { label: string; icon: string; color: string }> = {
   ML_TRAINING: { label: 'AI / ML 学習', icon: '🤖', color: 'bg-violet-100 text-violet-700' },
   RENDERING: { label: '3DCG レンダリング', icon: '🎨', color: 'bg-orange-100 text-orange-700' },
@@ -228,8 +75,8 @@ function NodeCard({ node, onBook }: { node: ComputeNode; onBook: (node: ComputeN
             <span className={`w-2 h-2 rounded-full flex-shrink-0 ${statusCfg.dot}`} />
             <span className={statusCfg.badge}>{statusCfg.label}</span>
           </div>
-          <h3 className="text-sm font-bold text-slate-900 truncate mt-1">{node.venueName}</h3>
-          <p className="text-xs text-slate-400 truncate">{node.address}</p>
+          <h3 className="text-sm font-bold text-slate-900 truncate mt-1">{node.venueName ?? ''}</h3>
+          <p className="text-xs text-slate-400 truncate">{node.address ?? ''}</p>
         </div>
       </div>
 
@@ -307,13 +154,13 @@ function JobRow({ job }: { job: ComputeJob }) {
             <span className="text-sm font-semibold text-slate-800">{taskCfg.label}</span>
             <span className={statusCfg.badge}>{statusCfg.label}</span>
           </div>
-          <p className="text-xs text-slate-400 truncate">{job.venueName}</p>
+          <p className="text-xs text-slate-400 truncate">{job.venueName ?? ''}</p>
         </div>
       </div>
 
       <div className="text-right flex-shrink-0">
         <div className="text-sm font-bold text-slate-800">
-          {formatJPYC(job.priceMinor)} JPYC
+          {formatJPYC(job.priceMinor ?? 0)} JPYC
         </div>
         <div className="text-xs text-slate-400">
           {job.actualHours
@@ -347,7 +194,7 @@ function JobSubmitModal({
   // 予約時間の状態
   const [hours, setHours] = useState(node.minBookingHours);
   // タスク種別の状態
-  const [taskType, setTaskType] = useState<TaskType>(node.supportedTasks[0]);
+  const [taskType, setTaskType] = useState<TaskType>(node.supportedTasks?.[0] ?? 'GENERAL');
 
   // 合計金額の計算
   const totalMinor = node.pricePerHourMinor * hours;
@@ -385,7 +232,7 @@ function JobSubmitModal({
           <div className="text-3xl">🖥️</div>
           <div>
             <div className="text-white font-bold">{node.specs.gpuModel}</div>
-            <div className="text-slate-300 text-sm">{node.venueName}</div>
+            <div className="text-slate-300 text-sm">{node.venueName ?? ''}</div>
           </div>
         </div>
 
@@ -546,36 +393,29 @@ const TABS: { key: TabKey; label: string; desc: string }[] = [
 
 // ===== ページコンポーネント =====
 export default function ComputePage() {
-  // アクティブタブの状態
-  const [activeTab, setActiveTab] = useState<TabKey>('market');
-  // タスク種別フィルタ
-  const [taskFilter, setTaskFilter] = useState<TaskType | 'ALL'>('ALL');
-  // 空き状況フィルタ
-  const [availableOnly, setAvailableOnly] = useState(false);
-  // 予約モーダル対象ノード
-  const [bookingNode, setBookingNode] = useState<ComputeNode | null>(null);
-  // ジョブ送信中フラグ
-  const [submitting, setSubmitting] = useState(false);
-  // ジョブ送信成功フラグ
-  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const {
+    filteredNodes,
+    myJobs,
+    isLoading: loading,
+    error,
+    taskFilter,
+    availableOnly,
+    bookingNode,
+    submitting,
+    submitSuccess,
+    activeTab,
+    setActiveTab,
+    refresh,
+    openBooking,
+    closeBooking,
+    setTaskFilter,
+    setAvailableOnly,
+    submitJob,
+  } = useComputePage();
 
-  // ノードフィルタリング処理
-  const filteredNodes = MOCK_NODES.filter((n) => {
-    if (availableOnly && !n.availableNow) return false;
-    if (taskFilter !== 'ALL' && !n.supportedTasks.includes(taskFilter)) return false;
-    return true;
-  });
-
-  // ジョブ送信処理
-  const handleSubmitJob = async (hours: number, taskType: TaskType) => {
+  const handleSubmitJob = (hours: number, taskType: TaskType) => {
     if (!bookingNode) return;
-    setSubmitting(true);
-    // 実際のAPI呼び出しはここに実装する（モック: 1秒待機）
-    await new Promise((r) => setTimeout(r, 1000));
-    setSubmitting(false);
-    setBookingNode(null);
-    setSubmitSuccess(true);
-    setTimeout(() => setSubmitSuccess(false), 5000);
+    return submitJob({ nodeId: bookingNode.nodeId, estimatedHours: hours, taskType });
   };
 
   return (
@@ -718,13 +558,30 @@ export default function ComputePage() {
               </label>
             </div>
 
-            {/* ノード件数 */}
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center justify-between gap-3">
+                <span className="text-red-700 text-sm">{error}</span>
+                <button onClick={refresh} className="btn-secondary py-1.5 px-3 text-sm">再試行</button>
+              </div>
+            )}
+
             <p className="text-sm text-slate-500 mb-4">
               <span className="font-semibold text-slate-800">{filteredNodes.length}台</span>のノードが見つかりました
             </p>
 
             {/* ノードグリッド */}
-            {filteredNodes.length === 0 ? (
+            {loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="card p-5 flex flex-col gap-4">
+                    <div className="skeleton h-5 w-3/4 rounded" />
+                    <div className="skeleton h-20 w-full rounded-xl" />
+                    <div className="skeleton h-16 w-full rounded" />
+                    <div className="skeleton h-10 w-1/2 rounded mt-auto" />
+                  </div>
+                ))}
+              </div>
+            ) : filteredNodes.length === 0 ? (
               <div className="card p-16 text-center">
                 <div className="text-5xl mb-4">🖥️</div>
                 <h3 className="text-lg font-bold text-slate-700 mb-2">条件に一致するノードがありません</h3>
@@ -733,7 +590,7 @@ export default function ComputePage() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {filteredNodes.map((node) => (
-                  <NodeCard key={node.nodeId} node={node} onBook={setBookingNode} />
+                  <NodeCard key={node.nodeId} node={node} onBook={(node) => openBooking(node.nodeId)} />
                 ))}
               </div>
             )}
@@ -747,13 +604,13 @@ export default function ComputePage() {
               <h2 className="text-base font-bold text-slate-800">送信済みジョブ一覧</h2>
             </div>
             <div className="px-6 py-2 divide-y divide-slate-50">
-              {MOCK_MY_JOBS.length === 0 ? (
+              {myJobs.length === 0 ? (
                 <div className="py-16 text-center">
                   <div className="text-5xl mb-4">📋</div>
                   <p className="text-slate-400">まだジョブを送信していません</p>
                 </div>
               ) : (
-                MOCK_MY_JOBS.map((job) => <JobRow key={job.jobId} job={job} />)
+                myJobs.map((job) => <JobRow key={job.jobId} job={job} />)
               )}
             </div>
 
@@ -857,7 +714,7 @@ export default function ComputePage() {
       {bookingNode && (
         <JobSubmitModal
           node={bookingNode}
-          onClose={() => setBookingNode(null)}
+          onClose={closeBooking}
           onSubmit={handleSubmitJob}
           submitting={submitting}
         />

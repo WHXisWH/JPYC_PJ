@@ -89,6 +89,44 @@ export class NodeStayClient {
     });
   }
 
+  async upsertPlan(
+    venueId: string,
+    body: { planId?: string; name: string; baseDurationMinutes: number; basePriceMinor: number; depositRequiredMinor: number }
+  ): Promise<{ planId: string; venueId: string; name: string; baseDurationMinutes: number; basePriceMinor: number; depositRequiredMinor: number }> {
+    return await this.json(`/v1/merchant/venues/${encodeURIComponent(venueId)}/plans`, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  }
+
+  async upsertSeat(
+    venueId: string,
+    body: { seatId?: string; type: string; status?: string }
+  ): Promise<{ seatId: string; venueId: string; type: string; status: string }> {
+    return await this.json(`/v1/merchant/venues/${encodeURIComponent(venueId)}/seats`, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  }
+
+  async enableCompute(venueId: string, enable: boolean): Promise<{ venueId: string; computeEnabled: boolean }> {
+    return await this.json(`/v1/merchant/venues/${encodeURIComponent(venueId)}/compute/enable`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ enable }),
+    });
+  }
+
+  async createDispute(body: { venueId: string; reason: string }): Promise<{ disputeId: string; venueId: string; reason: string; status: string; createdAtIso: string }> {
+    return await this.json('/v1/merchant/disputes', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  }
+
   async purchasePass(input: { planId: string; venueId: string; paymentMethod: 'JPYC' }, idempotencyKey: string) {
     const key = normalizeIdempotencyKey(idempotencyKey);
     return await this.json('/v1/passes/purchase', {
@@ -99,5 +137,51 @@ export class NodeStayClient {
       },
       body: JSON.stringify(input),
     });
+  }
+
+  // --- Compute API (S6) ---
+
+  /** GET /v1/compute/nodes */
+  async listComputeNodes(): Promise<
+    Array<{
+      nodeId: string;
+      venueId: string;
+      seatId: string;
+      status: 'IDLE' | 'RESERVED' | 'COMPUTING' | 'OFFLINE';
+      pricePerHourMinor: number;
+    }>
+  > {
+    return await this.json('/v1/compute/nodes');
+  }
+
+  /** POST /v1/compute/jobs */
+  async submitComputeJob(body: {
+    requesterId: string;
+    taskType: string;
+    taskSpec: { command: string; inputUri: string; outputUri: string; envVars?: Record<string, string>; dockerImage?: string };
+  }): Promise<{ jobId: string }> {
+    return await this.json('/v1/compute/jobs', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  }
+
+  /** GET /v1/compute/jobs/:jobId */
+  async getComputeJob(jobId: string): Promise<{ jobId: string; status: string }> {
+    return await this.json(`/v1/compute/jobs/${encodeURIComponent(jobId)}`);
+  }
+
+  /** POST /v1/compute/jobs/:jobId/cancel */
+  async cancelComputeJob(jobId: string): Promise<{ jobId: string; cancelled: true }> {
+    return await this.json(`/v1/compute/jobs/${encodeURIComponent(jobId)}/cancel`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+    });
+  }
+
+  /** GET /v1/compute/jobs/:jobId/result */
+  async getComputeJobResult(jobId: string): Promise<{ jobId: string; resultUri: string | null }> {
+    return await this.json(`/v1/compute/jobs/${encodeURIComponent(jobId)}/result`);
   }
 }

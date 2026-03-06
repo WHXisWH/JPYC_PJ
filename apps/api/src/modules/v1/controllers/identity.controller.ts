@@ -1,11 +1,6 @@
 import { Body, Controller, HttpException, HttpStatus, Post } from '@nestjs/common';
-import { z } from 'zod';
+import { IdentityVerifyBodySchema } from '../contracts';
 import { StoreService } from '../services/store.service';
-
-const IdentityVerifyBodySchema = z.object({
-  userId: z.string().min(1),
-  venueId: z.string().min(1),
-});
 
 @Controller('/v1/identity')
 export class IdentityController {

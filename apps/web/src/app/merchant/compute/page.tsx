@@ -1,60 +1,16 @@
 'use client';
 
-// 加盟店向け算力ノード管理ページ
-// 遊休PCの登録・稼働時間設定・収益確認・ノードの有効化/無効化を行う
+// 加盟店向け算力ノード管理ページ（View 層：useMerchantCompute の戻り値を表示のみ、SPEC V6）
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useMerchantCompute } from '../../../hooks';
+import type { ManagedNode, AvailableWindow } from '../../../models/merchant.model';
 
-// ===== 型定義 =====
-
-// ノードステータス
-type NodeStatus = 'IDLE' | 'COMPUTING' | 'OFFLINE' | 'RESERVED';
-
-// 曜日
 type DayOfWeek = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+type NodeStatus = ManagedNode['status'];
+type TaskType = ManagedNode['supportedTasks'][number];
 
-// 対応タスク種別
-type TaskType = 'ML_TRAINING' | 'RENDERING' | 'ZK_PROVING' | 'GENERAL';
-
-// 稼働可能時間帯
-interface AvailableWindow {
-  dayOfWeek: DayOfWeek;
-  startTime: string; // "HH:MM"
-  endTime: string;   // "HH:MM"
-}
-
-// 算力ノードの型
-interface ManagedNode {
-  nodeId: string;
-  seatId: string;
-  seatLabel: string;           // 例: "ブース B-07"
-  specs: {
-    cpuModel: string;
-    cpuCores: number;
-    gpuModel: string;
-    vram: number;
-    ram: number;
-  };
-  status: NodeStatus;
-  enabled: boolean;
-  pricePerHourMinor: number;
-  minBookingHours: number;
-  maxBookingHours: number;
-  supportedTasks: TaskType[];
-  availableWindows: AvailableWindow[];
-  // 収益サマリー
-  earnings: {
-    thisMonthMinor: number;
-    totalMinor: number;
-    completedJobs: number;
-    uptimePercent: number;
-  };
-}
-
-// ===== 定数 =====
-
-// 曜日ラベル定義
 const DAY_LABELS: Record<DayOfWeek, string> = {
   0: '日', 1: '月', 2: '火', 3: '水', 4: '木', 5: '金', 6: '土',
 };
@@ -74,82 +30,6 @@ const NODE_STATUS_CONFIG: Record<NodeStatus, { label: string; dot: string; badge
   RESERVED:  { label: '予約済み', dot: 'bg-amber-400', badge: 'badge-yellow' },
   OFFLINE:   { label: 'オフライン', dot: 'bg-slate-300', badge: 'badge-gray' },
 };
-
-// ===== モックデータ =====
-
-const MOCK_VENUE_NAME = '快適ネットカフェ 秋葉原店';
-
-const MOCK_NODES: ManagedNode[] = [
-  {
-    nodeId: 'node-001',
-    seatId: 'seat-b07',
-    seatLabel: 'ブース B-07',
-    specs: { cpuModel: 'Core i9-13900K', cpuCores: 24, gpuModel: 'RTX 4090', vram: 24, ram: 64 },
-    status: 'COMPUTING',
-    enabled: true,
-    pricePerHourMinor: 120000,
-    minBookingHours: 1,
-    maxBookingHours: 8,
-    supportedTasks: ['ML_TRAINING', 'RENDERING', 'ZK_PROVING', 'GENERAL'],
-    availableWindows: [
-      { dayOfWeek: 1, startTime: '10:00', endTime: '17:00' },
-      { dayOfWeek: 2, startTime: '10:00', endTime: '17:00' },
-      { dayOfWeek: 3, startTime: '10:00', endTime: '17:00' },
-      { dayOfWeek: 4, startTime: '10:00', endTime: '17:00' },
-      { dayOfWeek: 5, startTime: '10:00', endTime: '17:00' },
-    ],
-    earnings: {
-      thisMonthMinor: 98400000,   // 984,000 JPYC
-      totalMinor: 382000000,
-      completedJobs: 47,
-      uptimePercent: 82.3,
-    },
-  },
-  {
-    nodeId: 'node-002',
-    seatId: 'seat-v02',
-    seatLabel: 'VIP V-02',
-    specs: { cpuModel: 'Ryzen 9 7950X', cpuCores: 32, gpuModel: 'RTX 4080', vram: 16, ram: 128 },
-    status: 'IDLE',
-    enabled: true,
-    pricePerHourMinor: 100000,
-    minBookingHours: 2,
-    maxBookingHours: 12,
-    supportedTasks: ['ML_TRAINING', 'RENDERING', 'GENERAL'],
-    availableWindows: [
-      { dayOfWeek: 1, startTime: '09:00', endTime: '16:00' },
-      { dayOfWeek: 3, startTime: '09:00', endTime: '16:00' },
-      { dayOfWeek: 5, startTime: '09:00', endTime: '16:00' },
-      { dayOfWeek: 6, startTime: '09:00', endTime: '18:00' },
-      { dayOfWeek: 0, startTime: '09:00', endTime: '18:00' },
-    ],
-    earnings: {
-      thisMonthMinor: 72000000,
-      totalMinor: 210000000,
-      completedJobs: 31,
-      uptimePercent: 68.1,
-    },
-  },
-  {
-    nodeId: 'node-003',
-    seatId: 'seat-o15',
-    seatLabel: 'オープン O-15',
-    specs: { cpuModel: 'Core i7-12700K', cpuCores: 12, gpuModel: 'RTX 3080', vram: 10, ram: 32 },
-    status: 'OFFLINE',
-    enabled: false,
-    pricePerHourMinor: 60000,
-    minBookingHours: 1,
-    maxBookingHours: 6,
-    supportedTasks: ['RENDERING', 'GENERAL'],
-    availableWindows: [],
-    earnings: {
-      thisMonthMinor: 0,
-      totalMinor: 48000000,
-      completedJobs: 12,
-      uptimePercent: 0,
-    },
-  },
-];
 
 // ===== JPYCフォーマット =====
 function formatJPYC(minor: number): string {
@@ -704,57 +584,16 @@ function SetupGuide() {
 
 // ===== ページコンポーネント =====
 export default function MerchantComputePage() {
-  // ノード一覧の状態（モックデータで初期化）
-  const [nodes, setNodes] = useState<ManagedNode[]>(MOCK_NODES);
-  // 編集対象ノード（nullで新規登録モーダル）
-  const [editingNode, setEditingNode] = useState<ManagedNode | null | undefined>(undefined);
-  // 保存処理中フラグ
-  const [saving, setSaving] = useState(false);
-  // 保存成功フラグ
-  const [saveSuccess, setSaveSuccess] = useState(false);
-
-  // ノードの有効/無効を切り替え
-  const handleToggle = (nodeId: string) => {
-    setNodes((prev) =>
-      prev.map((n) =>
-        n.nodeId === nodeId
-          ? { ...n, enabled: !n.enabled, status: !n.enabled ? 'IDLE' : 'OFFLINE' }
-          : n
-      )
-    );
-  };
-
-  // 設定保存処理
-  const handleSave = async (data: Partial<ManagedNode>) => {
-    setSaving(true);
-    // 実際のAPI呼び出しはここに実装する（モック: 1秒待機）
-    await new Promise((r) => setTimeout(r, 800));
-
-    if (editingNode) {
-      // 既存ノードを更新
-      setNodes((prev) =>
-        prev.map((n) => (n.nodeId === editingNode.nodeId ? { ...n, ...data } : n))
-      );
-    } else {
-      // 新規ノードを追加（モック）
-      const newNode: ManagedNode = {
-        nodeId: `node-${Date.now()}`,
-        seatId: `seat-new-${Date.now()}`,
-        seatLabel: 'オープン O-XX',
-        specs: { cpuModel: '—', cpuCores: 0, gpuModel: '—', vram: 0, ram: 0 },
-        status: 'OFFLINE',
-        enabled: false,
-        earnings: { thisMonthMinor: 0, totalMinor: 0, completedJobs: 0, uptimePercent: 0 },
-        ...data,
-      } as ManagedNode;
-      setNodes((prev) => [...prev, newNode]);
-    }
-
-    setSaving(false);
-    setEditingNode(undefined);
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 4000);
-  };
+  const {
+    venueName,
+    nodes,
+    editingNode,
+    setEditingNode,
+    saving,
+    saveSuccess,
+    handleToggle,
+    handleSave,
+  } = useMerchantCompute();
 
   return (
     <>
@@ -783,7 +622,7 @@ export default function MerchantComputePage() {
           <div className="flex items-end justify-between gap-4 flex-wrap">
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-jpyc-500/10 border border-jpyc-500/20 rounded-full text-jpyc-300 text-sm font-semibold mb-4">
-                🏪 {MOCK_VENUE_NAME}
+                🏪 {venueName}
               </div>
               <h1 className="text-3xl font-extrabold text-white mb-2">算力ノード管理</h1>
               <p className="text-slate-400">

@@ -11,8 +11,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@nodestay/api-contracts": "workspace:*",
-    "@nodestay/domain": "workspace:*"
+    "@nodestay/api-contracts": "0.0.1",
+    "@nodestay/domain": "0.0.1"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^2.1.8",

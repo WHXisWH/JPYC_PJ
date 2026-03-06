@@ -1,0 +1,36 @@
+---
+description: 共享包 (packages/domain, api-client, api-contracts) 开发规范
+globs: packages/{domain,api-client,api-contracts}/**/*.ts
+alwaysApply: false
+---
+
+# 共享包开发规范
+
+## packages/domain
+
+共享领域类型，以 Zod schema + `z.infer` 方式提供：
+- `Money/CurrencyCode` - 金额类型
+- `IdempotencyKey` - 幂等键
+- `Venue/RegulationProfile` - 店铺与合规
+- `Session/Identity` - 会话与身份
+- `ComputeNode/ComputeJob` - 算力节点与任务
+- `Ledger*` - 账本域
+
+前后端必须尽量复用 domain 类型，避免重复定义。
+
+## packages/api-client
+
+`NodeStayClient` 封装所有 HTTP 调用：
+- 统一 baseUrl、fetch、JSON 解析与错误处理
+- 幂等键通过 `normalizeIdempotencyKey` 规范化
+- 可注入 `fetchImpl` 便于测试
+- 方法签名必须与 API Contract 对齐
+
+## packages/api-contracts
+
+API 请求/响应 Zod schema，供 api-client 和 apps/api 共用。
+
+## 测试
+
+- domain 和 api-client 覆盖率目标 100%
+- 使用 Vitest

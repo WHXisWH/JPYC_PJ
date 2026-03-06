@@ -1,0 +1,44 @@
+---
+description: 前端 (apps/web) 开发规范
+globs: apps/web/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# 前端开发规范
+
+## 文件组织
+
+```
+apps/web/src/
+├── app/          # Next.js App Router 页面 (均为 'use client')
+├── components/   # 复用 UI 组件 (layout/Header, layout/Footer, HealthBadge)
+├── hooks/        # Controller 层 Hook (useXxxPage / useXxx)
+├── models/       # 类型定义 + stores/ 子目录
+├── services/     # Service 层 (HTTP + Chain)
+├── stores/       # Zustand store 再导出
+└── indexed/      # IndexedDB (Dexie) - 链上事件索引
+```
+
+## 样式
+
+- 使用 Tailwind CSS v4（`@import "tailwindcss"` + `@theme`）
+- 品牌色 `brand-500: #6366F1`，JPYC 色 `jpyc-500: #F59E0B`
+- 预定义类：`btn-primary`, `btn-jpyc`, `badge-*`, `skeleton`, `input-field`
+- 暗色主题背景 `surface-900: #0F172A`
+
+## 状态管理
+
+- Zustand store 按业务域拆分: venue / pass / session / user / compute / chainSync
+- Service 写入 Store → Hook 读取 Store 暴露给页面
+- 页面组件只做渲染，不含业务逻辑
+
+## API 调用
+
+- 统一通过 `services/nodestay.ts` 创建 `NodeStayClient` 实例
+- 配置来自 `services/config.ts`（合约地址、Chain 配置、API URL）
+- 链上交互使用 viem
+
+## 测试
+
+- Vitest + @testing-library/react + jsdom
+- 覆盖率阈值 80%

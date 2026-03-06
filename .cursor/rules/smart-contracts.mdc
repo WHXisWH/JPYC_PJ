@@ -1,0 +1,45 @@
+---
+description: 智能合约 (packages/contracts) 开发规范
+globs: packages/contracts/**/*.{sol,ts}
+alwaysApply: false
+---
+
+# 智能合约开发规范
+
+## 合约栈
+
+- Solidity ^0.8.26, Hardhat, OpenZeppelin Contracts v5
+- 网络: Polygon PoS (137) / Amoy testnet (80002)
+- 支付代币: JPYC (ERC-20)
+
+## 权限模型
+
+所有合约采用 Owner + Operator 模式：
+- **Owner**: 设置 operator 地址，管理配置
+- **Operator**: 执行业务操作（mint/consume/capture/release/job 状态迁移）
+
+## 合约说明
+
+### AccessPassNFT (ERC-721)
+- `mint`: 发行利用权 NFT（Operator）
+- `consumePass`: 消费使用时间（Operator）
+- `suspendPass/reactivatePass`: 冻结/解冻
+- 转移限制: `transferable=false` 不可转让；`true` 时有 24h 冷却
+
+### DepositVault
+- `holdDeposit`: 用户存入 JPYC
+- `captureDeposit`: Operator 扣款给商家
+- `releaseDeposit`: Operator 退款给用户
+
+### ComputeMarket
+- Job 状态机: PENDING → ASSIGNED → RUNNING → COMPLETED/FAILED/CANCELLED
+- 分账: 75% 店铺 (venueOwner) / 25% 平台
+
+## 事件（Indexer 入口）
+
+合约事件是前端 IndexedDB Indexer 的唯一输入，变更事件定义时必须同步更新 Indexer。
+
+## 测试
+
+- Hardhat 内置 Mocha/Chai，当前 61 个测试
+- `npx hardhat test` / `npx hardhat coverage`

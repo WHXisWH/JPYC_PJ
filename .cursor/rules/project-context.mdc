@@ -1,0 +1,54 @@
+---
+description: Node Stay (JPYC_PJ) 项目背景与核心概念，所有 Agent 必读
+alwaysApply: true
+---
+
+# Node Stay 项目背景
+
+## 项目定位
+
+Node Stay 是面向日本网络咖啡厅（ネットカフェ）的**利用权资产化 + 闲置算力租赁**双面市场平台，基于 JPYC（日元稳定币）+ Polygon PoS 运行。
+
+## 双市场业务
+
+| 市场 | 核心流程 |
+|------|----------|
+| 座席利用权市场 | JPYC 购买 AccessPassNFT → QR 入店 → 使用 → 结账（DepositVault hold/capture/release） |
+| 闲置算力市场 | 提交 Job → JPYC 托管 → 执行 → 完成后 75% 店铺 / 25% 平台自动分账 |
+
+## Monorepo 结构
+
+```
+JPYC_PJ/
+├── apps/web/          # Next.js 14 (App Router) 前端
+├── apps/api/          # NestJS REST API 后端
+└── packages/
+    ├── contracts/     # Hardhat + Solidity 0.8.26 智能合约
+    ├── domain/        # Zod schema + 共享类型
+    ├── api-client/    # NodeStayClient (幂等 HTTP SDK)
+    └── api-contracts/ # API 请求/响应 Zod schema
+```
+
+## 技术栈速查
+
+- **前端**: Next.js 14 App Router, React 18, Tailwind CSS v4, Zustand, Dexie (IndexedDB), viem
+- **后端**: NestJS 10, Zod 校验
+- **链上**: Solidity 0.8.26, Hardhat, OpenZeppelin v5, Polygon PoS (chainId 137) / Amoy (chainId 80002)
+- **支付**: JPYC (ERC-20 日元稳定币)
+- **类型**: TypeScript ^5.6 全栈
+- **测试**: Vitest (前端), Jest (后端), Hardhat Mocha/Chai (合约)
+
+## 智能合约
+
+| 合约 | 用途 |
+|------|------|
+| `AccessPassNFT.sol` | 利用权 NFT (ERC-721)，含消费/冻结/转让冷却 |
+| `DepositVault.sol` | JPYC 押金 hold/capture/release |
+| `ComputeMarket.sol` | 算力节点注册 + Job 状态机 + 托管分账 |
+
+## 关键术语
+
+- **API Contract**: HTTP 接口契约（Zod schema），非链上合约
+- **Smart Contract**: 链上 Solidity 合约
+- **Indexed/Indexer**: 前端 IndexedDB 链上事件派生读模型
+- **NodeStay Client**: `@nodestay/api-client` HTTP SDK

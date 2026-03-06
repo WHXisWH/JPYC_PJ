@@ -1,0 +1,48 @@
+---
+description: 后端 (apps/api) NestJS 开发规范
+globs: apps/api/**/*.ts
+alwaysApply: false
+---
+
+# 后端 API 开发规范
+
+## 结构
+
+```
+apps/api/src/
+├── main.ts                    # 入口 (端口 3001)
+└── modules/
+    ├── app.module.ts
+    └── v1/
+        ├── v1.module.ts
+        ├── controllers/       # HTTP Controller
+        ├── contracts/         # Zod 校验 schema (API Contract)
+        └── services/          # Store / Ledger / Idempotency / FeatureFlags
+```
+
+## API 版本
+
+所有接口路径以 `/v1/` 开头。
+
+## 主要端点
+
+| 模块 | 端点 |
+|------|------|
+| Health | `GET /v1/health` |
+| Venues | `GET /v1/venues`, `GET /v1/venues/:venueId/plans` |
+| Passes | `POST /v1/passes/purchase`, `POST /v1/passes/:passId/transfer` |
+| Sessions | `POST /v1/sessions/checkin`, `POST /v1/sessions/checkout` |
+| User | `GET /v1/user/balance` |
+| Identity | `POST /v1/identity/verify` |
+| Merchant | `POST /v1/merchant/venues`, seats, compute enable |
+| Compute | `GET /v1/compute/nodes`, `POST /v1/compute/jobs`, 状态查询与取消 |
+
+## 校验
+
+- 输入校验使用 Zod schema（位于 contracts/ 目录）
+- 幂等性由 `IdempotencyService` 处理
+- Feature flags 控制 compute market 等功能开关
+
+## 测试
+
+- Jest + supertest + @nestjs/testing
